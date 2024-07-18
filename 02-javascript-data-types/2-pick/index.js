@@ -5,8 +5,8 @@
  * @returns {object} - returns the new object
  */
 export const pick = (obj, ...fields) => {
-    let map = new Map(Object.entries(obj));
-    let newMap = new Map();
+    const map = new Map(Object.entries(obj));
+    const newMap = new Map();
 
     for (const field of fields) {
         newMap.set(field, map.get(field));          
