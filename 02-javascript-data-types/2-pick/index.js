@@ -6,7 +6,7 @@
  */
 export const pick = (obj, ...fields) => {
     const map = new Map(Object.entries(obj));
-    let newMap = new Map();
+    const newMap = new Map();
 
     for (const field of fields) {
         newMap.set(field, map.get(field));          
