@@ -10,13 +10,12 @@ export function trimSymbols(string, size) {
         return newString;
     if (typeof size === "undefined" || size === null)
         return string;
-    const iterator = string[Symbol.iterator]();
-    let theChar = iterator.next();
+    const arr = string.split('');
     const map = new Map();
     let indBig = 0;
     let key;
-    while (!theChar.done && theChar.value !== ' ') {
-        key = String(indBig).concat(':', theChar.value);
+    for (const theChar of arr) {
+        key = String(indBig).concat(':', theChar);
         if (map.has(key))
         {
             let ind = map.get(key);
@@ -24,11 +23,9 @@ export function trimSymbols(string, size) {
             map.set(key, ind);
         } else {
             indBig++;            
-            key = String(indBig).concat(':', theChar.value);
+            key = String(indBig).concat(':', theChar);
             map.set(key, 1);
-
         }
-        theChar = iterator.next();
     }
     function BuildString(value, key, map) {
         const pos = key.indexOf(':') + 1;
