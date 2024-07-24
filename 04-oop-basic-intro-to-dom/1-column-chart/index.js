@@ -2,7 +2,7 @@ export default class ColumnChart {
     chartHeight = 50;
     constructor(props = {}){
         const {
-            data = {}, label = '', value = 0, link = '', formatHeading = data => data
+            data = [], label = '', value = 0, link = '', formatHeading = (value) => value
         } = props;
 
         this.data = data;
