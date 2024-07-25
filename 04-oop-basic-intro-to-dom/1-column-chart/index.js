@@ -74,9 +74,8 @@ export default class ColumnChart {
     
     update(newData){
         this.data = newData;
-
-        // const bodyElement = this.element.querySelector('[data-element="body"]');
-        // bodyElement.innerHTML = this.createBodyChartTemplate();
+        const bodyElement = this.element.querySelector('[data-element="body"]');
+        bodyElement.innerHTML = this.createBodyChartTemplate();
     }
 
     remove() {
