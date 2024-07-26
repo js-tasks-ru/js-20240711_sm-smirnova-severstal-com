@@ -1,8 +1,6 @@
 export default class NotificationMessage {
     static lastShownComponent;
     
-    static HIDE_TIMEOUT = 5_000;
-    
     constructor(message, props = {}) {
         const  {
                     duration = 0,
@@ -48,9 +46,6 @@ export default class NotificationMessage {
             NotificationMessage.lastShownComponent.hide();
         }
         NotificationMessage.lastShownComponent = this;
-    
-        console.log(`show ${this.type} ${this.duration}`);
-    
         this.timerId = setTimeout(() => {
                     this.hide();
                 }, this.duration);            
@@ -58,7 +53,6 @@ export default class NotificationMessage {
     }
     
     hide() {
-            console.log(`hide ${this.type} ${this.duration}`);
             this.remove();
         }
     
