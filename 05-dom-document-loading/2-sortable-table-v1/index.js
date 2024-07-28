@@ -1,76 +1,11 @@
 export default class SortableTable {
   subElements = {};
-  constructor(headerConfig = [], data = []) {
-
-    let id = '';
-    let title = '';
-    let sortable = false;
-    let sortType = '';
-    let template = (data) => data;
-    let description = "";
-    let quantity = 0;
-    let subcategory = {};
-    let status = 0;
-    let images = [];
-    let price = 0;
-    let discount = 0;
-    let sales = 0
-      ;
-    
-
-    ({
-      id = '',
-      title = '',
-      sortable = false,
-      sortType = '',
-      template = (data) => data
-    } = headerConfig);
-
-    ({
-      id = "",
-      title = "",
-      description = "",
-      quantity = 0,
-      subcategory = {},
-      status = 0,
-      images = [],
-      price = 0,
-      discount = 0,
-      sales = 14
-    } = data);    
-    
-    this.headerConfig = headerConfig;
-    // this.headerConfig = this.getHeaderConfig(headerConfig);
-
-    this.id = id;
-    this.title = title;
-
-    this.sortable = sortable;
-    this.sortType = sortType;
-    this.template = template;
-
-    this.data = data;
-    this.description = description;
-    this.quantity = quantity;
-    this.subcategory = subcategory;
-    this.status = status;
-    this.images = images;
-    this.price = price;
-    this.discount = discount;
-    this.sales = sales;
+  constructor(headerConfig = [], data = []) {  
+    this._headerConfig = headerConfig;
+    this._data = data;
     this.element = this.createElement(this.createTemplate());
     this.selectSubElements();
   }
-
-  // getHeaderConfig(headerConfig){
-  //   let arr = [];
-  //   let j = 0;
-  //   for(let i = 1; i< headerConfig.length; i++){
-  //     arr[j] = headerConfig[i];
-  //     j++;
-  //   }
-  //   return arr;
-  // }
 
   createElement(template) {
     const element = document.createElement('div');
@@ -78,22 +13,61 @@ export default class SortableTable {
     return element.firstElementChild;
   }
 
-  createHeaderTableTemplate() {
-    return this.headerConfig.map(({
-      id,
-      title,
-      sortable
-    }) => (
-            `<div class="sortable-table__cell" data-id="${id}" data-sortable="${sortable}">
-                <span>${title}</span>
-                ${this.getArrowElement(id)}
-            </div>`
-    )).join('');
+  createTemplate() {
+    return (
+      `<div data-element="productsContainer" class="products-list__container">
+            <div class="sortable-table">
+                <div data-element="header" class="sortable-table__header sortable-table__row">
+                    ${this.createHeaderCellsTemplate()}
+                </div>
+                <div data-element="body" class="sortable-table__body sortable-table__row">
+                    ${this.createBodyRowsTemplate()}
+                </div>
+            </div>
+       </div>`
+    );
   }
-//             `<div class="sortable-table__cell" data-id="${id}" data-sortable="${sortable}" ${this.setImagesStyle(id)}>
 
-  setImagesStyle(id){
-    return id === "images" ? ` style="display: none;" ` : '';
+// createTemplate() {
+//   return (
+//     `<div data-element="productsContainer" class="products-list__container">
+//           <div class="sortable-table sortable-table_loading sortable-table_empty">
+//               <div data-element="header" class="sortable-table__header sortable-table__row">
+//                   ${this.createHeaderCellsTemplate()}
+//               </div>
+//               <div data-element="body" class="sortable-table__body">
+//                   ${this.createBodyRowsTemplate()}
+//               </div>
+//               ${this.createEmptyDataTemplate()}              
+//           </div>
+//      </div>`
+//   );
+// }
+
+  createHeaderCellsTemplate() {
+    return this._headerConfig.map(item => {
+      const {id, title, sortable} = item;
+      const isSortField = this._currentSortField === id;
+      const dataSort = this._currentOrder ? `data-order="${this._currentOrder}"` : '';
+
+      return (
+        `<div
+            class="sortable-table__cell"
+            data-id=${id}
+            data-sortable=${sortable}
+            ${dataSort}
+        >
+            <span>${title}</span>
+            ${isSortField ? this.createSortArrowTemplate() : ''}
+        </div>`
+      );
+    }).join('');
+  }
+
+  createSortArrowTemplate(){
+    return `<span data-element="arrow" class="sortable-table__sort-arrow">
+              <span class="sort-arrow"></span>
+            </span>`;
   }
 
   getArrowElement(id){
@@ -102,38 +76,29 @@ export default class SortableTable {
             </span>` : '';
   }
 
-  createBodyTableTemplate() {
-    return this.data.map(({
-      title,
-      quantity,
-      price,
-      sales
-    }) => (
-      `<div class="sortable-table__cell">
-          <img class="sortable-table-image" alt="Image" src="http://magazilla.ru/jpg_zoom1/246743.jpg">
-        </div>
-       <div class="sortable-table__cell">${title}</div>
-       <div class="sortable-table__cell">${quantity}</div>
-       <div class="sortable-table__cell">${price}</div>
-       <div class="sortable-table__cell">${sales}</div>`
-    )).join('');
+  createBodyRowsTemplate() {
+    return this._data.map(item => {
+      const {title, quantity, price, sales} = item;
+
+      return (
+        `<div class="sortable-table__cell">
+            <img class="sortable-table-image" alt="Image" src="http://magazilla.ru/jpg_zoom1/246743.jpg">
+         </div><div class="sortable-table__cell">${title}</div><div class="sortable-table__cell">${quantity}</div><div class="sortable-table__cell">${price}</div><div class="sortable-table__cell">${sales}</div>`
+    );
+    }).join('');
   }
 
-  // <div class="sortable-table__cell" style="display: none;">
-
-  createTemplate() {
+  createEmptyDataTemplate() {
     return (
-            `<div data-element="productsContainer" class="products-list__container">
-                <div class="sortable-table">              
-                    <div data-element="header" class="sortable-table__header sortable-table__row">
-                        ${this.createHeaderTableTemplate()}
-                    </div>
-                    <div data-element="body" class="sortable-table__body sortable-table__row">
-                        ${this.createBodyTableTemplate()}
-                    </div>
-                </div>
+            `<div data-element="loading" class="loading-line sortable-table__loading-line"></div>
+
+            <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder">
+              <div>
+                <p>No products satisfies your filter criteria</p>
+                <button type="button" class="button-primary-outline">Reset all filters</button>
+              </div>
             </div>`
-    );
+        );
   }
 
   sort(field, order) {
@@ -167,7 +132,7 @@ export default class SortableTable {
 
   getFieldValueArray(field){
     let set = new Set();
-    this.data.forEach(obj => {
+    this._data.forEach(obj => {
       set.add(obj[field]);
     });
     return Array.from(set);
@@ -190,7 +155,7 @@ export default class SortableTable {
     let sortedData = [];
     let i = 0;
     for(let value of array ){
-      for(let obj of this.data ){
+      for(let obj of this._data ){
         if (obj[field] === value)
         {
           sortedData[i] = obj;
@@ -202,35 +167,20 @@ export default class SortableTable {
   }
 
   update(newData) {
-    this.data = newData;
+    this._data = newData;
     // const headerFieldElement = this.subElements.header;
     // headerFieldElement.innerHTML = this.createHeaderTableTemplate();
     const bodyFieldElement = this.subElements.body;
-    bodyFieldElement.innerHTML = this.createBodyTableTemplate();
+    bodyFieldElement.innerHTML = this.createBodyRowsTemplate();
   }
 
-
-  
-
-  /*
-
-                <div data-element="loading" class="loading-line sortable-table__loading-line"></div>
-
-                <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder">
-                  <div>
-                    <p>No products satisfies your filter criteria</p>
-                    <button type="button" class="button-primary-outline">Reset all filters</button>
-                  </div>
-                </div>
-*/
   remove() {
     this.element.remove();
   }
     
   destroy() {
-    this.element.remove();
+    this.remove();
   }
-
 
 }
 
