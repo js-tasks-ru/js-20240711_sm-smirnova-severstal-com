@@ -1,10 +1,14 @@
 export default class SortableTable {
   subElements = {};
+  _currentSortField = '';
+  _currentOrder = '';
+
   constructor(headerConfig = [], data = []) {  
     this._headerConfig = headerConfig;
     this._data = data;
     this.element = this.createElement(this.createTemplate());
     this.selectSubElements();
+    this._arrowElement = this.createSortArrowTemplate();
   }
 
   createElement(template) {
@@ -63,6 +67,11 @@ export default class SortableTable {
       );
     }).join('');
   }
+  createSortArrowElement(template) {
+    const element = document.createElement('span');
+    element.innerHTML = template;
+    return element.firstElementChild;
+  }
 
   createSortArrowTemplate(){
     return `<span data-element="arrow" class="sortable-table__sort-arrow">
@@ -102,6 +111,9 @@ export default class SortableTable {
   }
 
   sort(field, order) {
+    this._currentSortField = field;
+    this._currentOrder = order;
+
     this.selectSubElements();
     const headerFieldElement = this.subElements.header.querySelector(`[data-id="${field}"]`);
     if (!headerFieldElement.getAttribute('data-sortable'))
@@ -111,9 +123,30 @@ export default class SortableTable {
     const fieldValueArray = isString ? this.sortStrings(this.getFieldValueArray(field), order) : this.sortNumbers(this.getFieldValueArray(field), order);
     const sortedData = this.getObjectByArray(field, fieldValueArray);
    
-    // this.arrowElement.parentElement = headerFieldElement;
-
     this.update(sortedData);
+
+    const arrowElement = this.subElements.header.querySelector(`[data-element="arrow"]`);
+    if (arrowElement)
+    {
+      // let elem = document.querySelector('#elem');
+      // let parElem = arrowElement.parentElement;
+      // parElem = headerFieldElement;
+
+      // console.log(id);
+      
+      
+      this._arrowElement = arrowElement;
+      this._arrowElement.parentElement = headerFieldElement;
+
+      // const bodyFieldElement = this.subElements.body;
+      // bodyFieldElement.innerHTML = this.createBodyRowsTemplate();
+
+
+    }
+    else {
+      const span = this.createSortArrowElement(this.createSortArrowTemplate());
+      headerFieldElement.append(span);
+    }
 
 
     // const cellIndex = this.headerConfig.findIndex(obj => obj.id === field);
