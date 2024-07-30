@@ -102,56 +102,27 @@ export default class SortableTable {
       </div>`;
   }
 
-  sort(field, order) {
-    this._currentSortField = field;
-    this._currentOrder = order;
-
-    const isString = field === "title";
-    const fieldValueArray = isString
-      ? this.sortStrings(this.getFieldValueArray(field), order)
-      : this.sortNumbers(this.getFieldValueArray(field), order);
-
-    const sortedData = this.getObjectByArray(field, fieldValueArray);
-
-    this.update(sortedData);
-  }
-
-  sortStrings(arr, param = "asc") {
-    const newArr = [...arr].sort((a, b) =>
-      a.localeCompare(b, ["ru", "en"], { caseFirst: "upper" }),
-    );
-    return param === "asc" ? newArr : newArr.reverse();
-  }
-
-  sortNumbers(arr, param = "asc") {
-    const newArr = [...arr].sort((a, b) => a - b);
-    return param === "asc" ? newArr : newArr.reverse();
-  }
-
-  getFieldValueArray(field) {
-    let set = new Set();
-    this._data.forEach((obj) => {
-      set.add(obj[field]);
+  sort(field, order) {   
+    const column = this._headerConfig.find(item => item.id === field);
+    this._data.sort((a, b) => {
+      switch (column.sortType) {  
+      case 'string':    
+        if (order === 'asc') {    
+          return a[field].localeCompare(b[field], 'ru-RU', {caseFirst: 'upper'});  
+        }    
+        return b[field].localeCompare(a[field], 'ru-RU', {caseFirst: 'upper'});    
+      case 'number':    
+        if (order === 'asc') {    
+          return a[field] - b[field];  
+        }    
+        return b[field] - a[field];  
+      case 'custom':  
+        if (order === 'asc') {  
+          return customSorting(a, b);
+        }  
+        return customSorting(b, a);  
+      }  
     });
-    return Array.from(set);
-  }
-
-  getObjectByArray(field, array) {
-    let sortedData = [];
-    let i = 0;
-    for (let value of array) {
-      for (let obj of this._data) {
-        if (obj[field] === value) {
-          sortedData[i] = obj;
-          i++;
-        }
-      }
-    }
-    return sortedData;
-  }
-
-  update(newData) {
-    this._data = newData;
     this.subElements.body.innerHTML = this.createBodyRowsTemplate();
   }
 
