@@ -1,59 +1,58 @@
-import SortableTable1 from './sortableTable.js';
+import SortTableTableV1 from "./sortableTable.js";
 
-export default class SortableTable  {
-  subElements = {};
+export default class SortableTableV2 extends SortTableTableV1 {
+  isSortLocally = true;
+  sortField;
+  sortOrder;
 
-  constructor(headersConfig, {
-    data = [],
-    sorted = {}
-  } = {}) {
-    this.headersConfig = headersConfig;
-    this.data = data;
+  constructor(headersConfig, {data = [], sorted = {}} = {}) {
+    super(headersConfig, data);
     this.sorted = sorted;
-    this._sortableTable = new SortableTable1(headersConfig, data);
-    this.element = this._sortableTable.element;
-    this.selectSubElements();
-    this.sort();
-    this.addClick();
+    this.createEventListeners();    
   }
 
-  selectSubElements() {
-    this.element.querySelectorAll("[data-element]").forEach((element) => {
-      this.subElements[element.dataset.element] = element;
-    });
+  sortOnClient() {
+    super.sort(this.sortField, this.sortOrder);
   }
 
-  addClick(){
-    this.subElements.header.addEventListener('click', function(event) {
-      const target = event.target; // где был клик?
+  sortOnServer() {
     
-      if (target.tagName != 'SPAN') return; 
-      const order = this.sorted.map((item) => {
-        const { id, order } = item;        
-        return order;
-      });
-      this.sort(target.field, order); 
-    });
-
   }
 
-  sort(field, order) {
+  sort() {
     if (this.isSortLocally) {
-      this.SortableTable1.sort(field, order);
-    } else {
+      this.sortOnClient();
+    }
+    else {
       this.sortOnServer();
     }
   }
 
-  sortOnServer(){
+  handleHeaderEventPointerDown(event) {
+    const currentColumn = event.target.closest('[data-sortable="true"]');
+    if (!currentColumn)
+      return;
 
-  }
-  remove() {
-    this.element.remove();
+    this.sortField = currentColumn.dataset.id;
+    this.sortOrder = currentColumn.dataset.order === 'asc' ? 'desc' : 'asc';
+    currentColumn.dataset.order = this.sortOrder;
+
+    this.sort();
   }
 
-  destroy() {
-    this.remove();
+  createEventListeners(){
+    this.handleHeaderEventPointerDown = this.handleHeaderEventPointerDown.bind(this);
+    this.subElements.header.addEventListener(
+      "pointerdown"
+      , this.handleHeaderEventPointerDown
+    );
+  }
+
+  destroyEventListeners(){
+    this.subElements.header.removeEventListener(
+      "pointerdown"
+      , this.handleHeaderEventPointerDown
+    );
   }
 
 }

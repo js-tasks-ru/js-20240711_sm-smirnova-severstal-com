@@ -5,56 +5,85 @@ class Tooltip {
     if (Tooltip.instance) {
       return Tooltip.instance; 
     }
-    Tooltip.instance = this;   
+    Tooltip.instance = this;  
+    this.initialize();  
   }
   
   initialize () {
-    document.addEventListener('pointerover', function(event) {
-   
-    const target = event.target;
+    const tooltipElement = document.querySelector('[class="tooltip"]');
+    if (!tooltipElement) {
+      this.createElement();
+    }
+    this.handleHeaderEventPointerOver = this.handleHeaderEventPointerOver.bind(this);
+    document.addEventListener(
+      "pointerover"
+      , this.handleHeaderEventPointerOver
+    );
+  }
 
-     // если у нас есть подсказка...
-    const id = target.dataset.tooltip;
-    if (!id) return;
+  render() {
+    this.show('');
+  }
 
-     // ...создадим элемент для подсказки
-     this.tooltipElement = document.createElement('div');
-     this.tooltipElement.className = 'tooltip';
-     this.tooltipElement.innerHTML = id;
-     document.body.append(this.tooltipElement);
+  createElement() {
+    // ...создадим элемент для подсказки
+    this.tooltipElement = document.createElement('div');
+    this.tooltipElement.className = 'tooltip';
+    // Чтобы подсказка не мешала взаимодействию с другими элементами
+    this.tooltipElement.style.pointerEvents = 'none'; 
+    this.tooltipElement.style.display = 'none';
+    document.body.append(this.tooltipElement);
+  }
 
-     const div = target.closest('div')
-     if (!div) return; 
-
-     if (!document.contains(div)) return; 
-   });
-
-   document.addEventListener('pointerout', function(event) {
-
-     if (this.tooltipElement) {
-      this.tooltipElement.remove();
-      this.tooltipElement = null;
-     }
-
-   });
-   document.addEventListener('pointermove', (event) => {
+  handleHeaderEventPointerOver(event) {
       const target = event.target;
+      // если у нас есть подсказка...
+      const id = target.dataset.tooltip;
+      if (!id) {
+        this.hide();
+        return;
+      }
+  
+      const div = target.closest('div')
+      if (!div) {
+        this.hide();
+        return;
+      } 
+  
+      if (!document.contains(div)) {
+        this.hide();
+        return;
+      }
+      
+      this.show('');
 
-});
+  }
 
-}
+  show(text) {
+    this.tooltipElement.innerText = text;
+    this.tooltipElement.style.display = 'block';
+  }
 
-  render(){
-    
+  hide() {
+      this.tooltipElement.style.display = 'none';
+  }
+ 
+  destroyEventListeners(){
+    this.handleHeaderEventPointerOver = this.handleHeaderEventPointerOver.bind(this);
+    document.removeEventListener(
+      "pointerover"
+      , this.handleHeaderEventPointerOver
+    );
   }
 
   destroy() {
-  if (this.tooltipElement) {
-      this.tooltipElement.remove();
-      this.tooltipElement = null;
-    }
-  }
+    const tooltipElement = document.querySelector('[class="tooltip"]');
+    if (tooltipElement)
+      tooltipElement.remove();
 
+    this.tooltipElement.remove();
+    this.destroyEventListeners();
+  }
 }
 
 export default Tooltip;
