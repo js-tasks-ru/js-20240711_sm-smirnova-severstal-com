@@ -6,82 +6,69 @@ class Tooltip {
       return Tooltip.instance; 
     }
     Tooltip.instance = this;  
-    this.initialize();  
+    this.element;
   }
   
   initialize () {
-    const tooltipElement = document.querySelector('[class="tooltip"]');
-    if (!tooltipElement) {
+    const element = document.querySelector('[class="tooltip"]');
+    if (!element) {
       this.createElement();
     }
-    this.handleHeaderEventPointerOver = this.handleHeaderEventPointerOver.bind(this);
-    document.addEventListener(
-      "pointerover"
-      , this.handleHeaderEventPointerOver
-    );
+    document.addEventListener("pointerover", this.handlePointerOver);
+    document.addEventListener("pointerout", this.handlePointerOut);
   }
 
   render() {
-    this.show('');
+    const element = document.querySelector('[class="tooltip"]');
+    if (!element) {
+      this.createElement();
+    }
+    const dataTooltip = document.querySelector("[data-tooltip='bar-bar-bar']");
+    if (dataTooltip) {
+      this.show(dataTooltip.getAttribute('data-tooltip'));
+    }
   }
 
   createElement() {
     // ...создадим элемент для подсказки
-    this.tooltipElement = document.createElement('div');
-    this.tooltipElement.className = 'tooltip';
-    // Чтобы подсказка не мешала взаимодействию с другими элементами
-    this.tooltipElement.style.pointerEvents = 'none'; 
-    this.tooltipElement.style.display = 'none';
-    document.body.append(this.tooltipElement);
+    this.element = document.createElement('div');
+    this.element.className = 'tooltip';
+    document.body.append(this.element);
   }
 
-  handleHeaderEventPointerOver(event) {
-      const target = event.target;
-      // если у нас есть подсказка...
-      const id = target.dataset.tooltip;
-      if (!id) {
-        this.hide();
-        return;
-      }
-  
-      const div = target.closest('div')
-      if (!div) {
-        this.hide();
-        return;
-      } 
-  
-      if (!document.contains(div)) {
-        this.hide();
-        return;
-      }
-      
-      this.show('');
+  removeElement() {
+    this.element.remove();
+  }
 
+  handlePointerOver = (event) => {
+      const target = event.target.closest('[data-tooltip]');
+      if (target) {
+        const element = document.querySelector('[class="tooltip"]');
+        if (!element) {
+          this.createElement();
+        }
+        this.show(target.getAttribute('data-tooltip'));
+      }
   }
 
   show(text) {
-    this.tooltipElement.innerText = text;
-    this.tooltipElement.style.display = 'block';
-  }
-
-  hide() {
-      this.tooltipElement.style.display = 'none';
+    this.element.textContent = text;
   }
  
+  handlePointerOut = (event) => {
+    const target = event.target.closest('[data-tooltip]');
+    if (target) {
+        this.removeElement();
+    }
+  }
+
   destroyEventListeners(){
-    this.handleHeaderEventPointerOver = this.handleHeaderEventPointerOver.bind(this);
-    document.removeEventListener(
-      "pointerover"
-      , this.handleHeaderEventPointerOver
-    );
+    document.removeEventListener("pointerover", this.handlePointerOver);
+    document.removeEventListener("pointerout", this.handlePointerOut);
   }
 
   destroy() {
-    const tooltipElement = document.querySelector('[class="tooltip"]');
-    if (tooltipElement)
-      tooltipElement.remove();
-
-    this.tooltipElement.remove();
+    this.element.remove();    
     this.destroyEventListeners();
   }
 }
