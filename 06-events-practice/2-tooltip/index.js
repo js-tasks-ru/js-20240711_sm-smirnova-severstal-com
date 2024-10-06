@@ -6,31 +6,29 @@ class Tooltip {
       return Tooltip.instance; 
     }
     Tooltip.instance = this;  
-    this.element;
   }
   
   initialize () {
-    const element = document.querySelector('[class="tooltip"]');
-    if (!element) {
+    if (!this.element) {
       this.createElement();
     }
+
     document.addEventListener("pointerover", this.handlePointerOver);
     document.addEventListener("pointerout", this.handlePointerOut);
   }
 
   render() {
-    const element = document.querySelector('[class="tooltip"]');
-    if (!element) {
+    if (!this.element) {
       this.createElement();
     }
-    const dataTooltip = document.querySelector("[data-tooltip='bar-bar-bar']");
+
+    const dataTooltip = document.querySelectorAll("[data-tooltip]")[0];
     if (dataTooltip) {
       this.show(dataTooltip.getAttribute('data-tooltip'));
     }
   }
 
   createElement() {
-    // ...создадим элемент для подсказки
     this.element = document.createElement('div');
     this.element.className = 'tooltip';
     document.body.append(this.element);
