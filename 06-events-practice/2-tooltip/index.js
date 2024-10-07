@@ -22,10 +22,7 @@ class Tooltip {
       this.createElement();
     }
 
-    const dataTooltip = document.querySelectorAll("[data-tooltip]")[0];
-    if (dataTooltip) {
-      this.show(dataTooltip.getAttribute('data-tooltip'));
-    }
+    this.element.dispatchEvent(new Event("pointerover"));
   }
 
   createElement() {
@@ -41,10 +38,8 @@ class Tooltip {
   handlePointerOver = (event) => {
       const target = event.target.closest('[data-tooltip]');
       if (target) {
-        const element = document.querySelector('[class="tooltip"]');
-        if (!element) {
-          this.createElement();
-        }
+        // this.element.hidden = false;
+        this.createElement();
         this.show(target.getAttribute('data-tooltip'));
       }
   }
@@ -56,6 +51,7 @@ class Tooltip {
   handlePointerOut = (event) => {
     const target = event.target.closest('[data-tooltip]');
     if (target) {
+      // this.element.hidden = true;
         this.removeElement();
     }
   }
@@ -66,7 +62,7 @@ class Tooltip {
   }
 
   destroy() {
-    this.element.remove();    
+    this.removeElement();   
     this.destroyEventListeners();
   }
 }
