@@ -9,17 +9,17 @@ class Tooltip {
   }
   
   initialize () {
-    if (!this.element) {
-      this.createElement();
-    }
+    this.createElement();
 
     document.addEventListener("pointerover", this.handlePointerOver);
     document.addEventListener("pointerout", this.handlePointerOut);
+    document.addEventListener("pointermove", this.handlePointerMove);
   }
 
   render() {
-    this.element.dispatchEvent(new Event("pointerover"));
-    this.element.dispatchEvent(new Event("pointerout"));
+    this.element.dispatchEvent(new Event("pointerover", {bubbles: true}));
+    this.element.dispatchEvent(new Event("pointerout", {bubbles: true}));
+    this.element.dispatchEvent(new Event("pointermove", {bubbles: true}));
   }
 
   createElement() {
@@ -27,11 +27,15 @@ class Tooltip {
     this.element.className = 'tooltip';
     document.body.append(this.element);
   }
+  
+  removeElement() {
+    this.element.remove(); 
+  }
 
   handlePointerOver = (event) => {
       const target = event.target.closest('[data-tooltip]');
       if (target) {
-        this.element.hidden = false;
+        this.createElement();
         this.element.textContent = target.getAttribute('data-tooltip');
       }
   }
@@ -39,18 +43,32 @@ class Tooltip {
   handlePointerOut = (event) => {
     const target = event.target.closest('[data-tooltip]');
     if (target) {
-      this.element.hidden = true;
-      this.element.textContent = null;
+      this.removeElement();
+    }
+  }
+
+  handlePointerMove = (event) => {
+    if (this.tooltipText) {
+      this.positionTooltip(event);
+    }
+  }
+
+  positionTooltip(event) {
+    if (this.element) {
+      const {clientX, clientY} = event;
+      this.element.style.left = `${clientX + 10}px`;
+      this.element.style.top = `${clientY + 10}px`;
     }
   }
 
   destroyEventListeners(){
     document.removeEventListener("pointerover", this.handlePointerOver);
     document.removeEventListener("pointerout", this.handlePointerOut);
+    document.removeEventListener("pointermove", this.handlePointerMove);
   }
 
   destroy() {
-    this.element.remove();  
+    this.removeElement();  
     this.destroyEventListeners();
   }
 }
