@@ -17,9 +17,6 @@ class Tooltip {
   }
 
   render() {
-    this.element.dispatchEvent(new Event("pointerover", {bubbles: true}));
-    this.element.dispatchEvent(new Event("pointerout", {bubbles: true}));
-    this.element.dispatchEvent(new Event("pointermove", {bubbles: true}));
   }
 
   createElement() {
@@ -48,9 +45,7 @@ class Tooltip {
   }
 
   handlePointerMove = (event) => {
-    if (this.tooltipText) {
-      this.positionTooltip(event);
-    }
+    this.positionTooltip(event);
   }
 
   positionTooltip(event) {
