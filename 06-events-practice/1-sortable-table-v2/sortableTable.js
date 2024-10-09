@@ -1,8 +1,8 @@
 export default class SortableTable {
   subElements = {};
-  _currentSortField = "";
-  _currentOrder = "";
-  
+  _currentSortField = "title";
+  _currentOrder = "asc";
+
   constructor(headerConfig = [], data = []) {
     this._headerConfig = headerConfig;
     this._data = data;
@@ -125,7 +125,7 @@ export default class SortableTable {
     });
     this.subElements.body.innerHTML = this.createBodyRowsTemplate();
   }
-
+  
   remove() {
     this.element.remove();
   }
