@@ -2,7 +2,6 @@ import RangePicker from './components/range-picker/src/index.js';
 import SortableTable from './components/sortable-table/src/index.js';
 import ColumnChart from './components/column-chart/src/index.js';
 import header from './bestsellers-header.js';
-import ColumnChartExt from './components/columnChartExt.js';
 
 import fetchJson from './utils/fetch-json.js';
 
@@ -13,7 +12,6 @@ export default class Page {
     datefrom;
     rangePicker;
     ordersChart;
-    columnChartExt;
     ordersChartElement;
     ordersChartUrl = 'api/dashboard/orders';
     componentMap = {
@@ -50,17 +48,6 @@ export default class Page {
         );
         this.ordersChartElement = this.ordersChart.element;
         
-        this.columnChartExt = new ColumnChartExt({
-            label: '111',
-            link: 'sales',
-            data: [ 30, 40, 20, 80, 35, 15 ],
-            url: this.ordersChartUrl,
-            range: {
-              from: new Date(),
-              to: new Date(),
-            }
-          });
-
         this.element = this.createElement(this.createTemplate());
         this.createRangePickerElement();
         this.createColumnChartElements();
@@ -120,62 +107,51 @@ export default class Page {
     }
 
     createColumnChartElements() {
-        const parentElement = this.element.querySelector('[class="dashboard__charts"]');
-        const childElement = parentElement.querySelector('[class="column-chart column-chart_loading"]');        
-        if (childElement) {
-            parentElement.removeChild();
+        const parentElement = this.element.querySelector('[data-element="ordersChart"]');
+        if (parentElement) {
+            const columnChartElement = parentElement.querySelector('[class="column-chart"]');
+            if (columnChartElement) {
+                columnChartElement.remove();
+            }
         }
+        // for (const child of parentElement.children) {
+        //     child.removeChild();
+        //   }
+            
+        // const childElement = parentElement.querySelector('[class="column-chart column-chart_loading"]');        
+        // if (childElement) {
+        //     parentElement.removeChild();
+        // }
         parentElement.append(this.ordersChartElement);
     }
     
-    // createEventListeners() {
-    //     document.addEventListener('date-select', this.handleRangePickerDateSelect)
-    // }
-
-    // destroyEventListeners() {
-    //     document.removeEventListener('date-select', this.handleRangePickerDateSelect)
-    // }
-
-    // handleRangePickerDateSelect = (e) => {
-    //     this.ordersChart.range = e.detail;
-    //     this.ordersChart.url = new URL(this.ordersChartUrl, BACKEND_URL);
-    //     for (const [componentName, componentInstance] of Object.entries(this.componentMap)) {
-    //         componentInstance.update(e.detail.from, e.detail.to);
-    //         this.ordersChart = componentInstance;
-    //         this.ordersChartElement = this.ordersChart.element;
-    //     }
-
-    //     // this.ordersChart = new ColumnChart({
-    //     //     label: '111',
-    //     //     link: 'sales',
-    //     //     data: [ 30, 40, 20, 80, 35, 15 ],
-    //     //     url: this.ordersChartUrl,
-    //     //     range: e.detail
-    //     //   }    
-    //     // );
-        
-    //     this.createColumnChartElements();
-    //     // this.dispatchEvent();
-    // }
-
-    // dispatchEvent() {
-    //     this.ordersChartElement.dispatchEvent(new CustomEvent('columnn-chart-cahange', {
-    //       bubbles: true,
-    //       detail: super.element
-    //     }));
-    // }
-
     createEventListeners() {
-        document.addEventListener('columnn-chart-change', this.handleColumnChartChange)
+        document.addEventListener('date-select', this.handleRangePickerDateSelect)
     }
 
     destroyEventListeners() {
-        document.removeEventListener('columnn-chart-change', this.handleColumnChartChange)
+        document.removeEventListener('date-select', this.handleRangePickerDateSelect)
     }
 
-    handleColumnChartChange = (e) => {
-        this.ordersChartElement = e.detail;
-        createColumnChartElements();
+    handleRangePickerDateSelect = (e) => {
+        this.ordersChart.range = e.detail;
+        this.ordersChart.url = new URL(this.ordersChartUrl, BACKEND_URL);
+        for (const [componentName, componentInstance] of Object.entries(this.componentMap)) {
+            componentInstance.update(e.detail.from, e.detail.to);
+            this.ordersChart = componentInstance;
+            this.ordersChartElement = this.ordersChart.element;
+        }
+
+        // this.ordersChart = new ColumnChart({
+        //     label: '111',
+        //     link: 'sales',
+        //     data: [ 30, 40, 20, 80, 35, 15 ],
+        //     url: this.ordersChartUrl,
+        //     range: e.detail
+        //   }    
+        // );
+        
+        this.createColumnChartElements();
     }
 
     destroy() {
