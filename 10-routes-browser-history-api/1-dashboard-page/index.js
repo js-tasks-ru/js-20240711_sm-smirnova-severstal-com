@@ -9,22 +9,29 @@ const BACKEND_URL = 'https://course-js.javascript.ru/';
 
 export default class Page {
     
+    subElements = {};
+
+    selectSubElements() {
+      this.element.querySelectorAll("[data-element]").forEach((element) => {
+        this.subElements[element.dataset.element] = element;
+      });
+    }
+      
     datefrom;
     rangePicker;
     ordersChart;
-    ordersChartElement;
     ordersChartUrl = 'api/dashboard/orders';
     salesChart;
-    salesChartElement;
     salesChartUrl = 'api/dashboard/sales';
     customersChart;
-    customersChartElement;
     customersChartUrl = 'api/dashboard/customers';
     bestseller;
-    bestsellerElement;
     bestsellerUrl = 'api/dashboard/bestsellers';
-    
+
     initPage() {
+        this.element = this.createElement(this.createTemplate());
+        this.selectSubElements(); 
+
         this.datefrom = this.getDateFrom();
         this.rangePicker = new RangePicker({
             from: this.datefrom            
@@ -33,7 +40,6 @@ export default class Page {
         this.ordersChart = new ColumnChart({
             label: '111',
             link: '/orders',
-            data: this.getChartData(this.ordersChartUrl),
             url: this.ordersChartUrl,
             range: {
               from: this.getDateFrom(),
@@ -41,12 +47,10 @@ export default class Page {
             }
           }    
         );
-        this.ordersChartElement = this.ordersChart.element;
 
         this.salesChart = new ColumnChart({
             label: '111',
             link: '/sales',
-            data: this.getChartData(this.salesChartUrl),
             url: this.ordersChartUrl,
             range: {
               from: this.getDateFrom(),
@@ -54,12 +58,10 @@ export default class Page {
             }
           }    
         );
-        this.salesChartElement = this.salesChart.element;
         
         this.customersChart = new ColumnChart({
             label: '111',
             link: '/customers',
-            data: this.getChartData(this.customersChartUrl),
             url: this.customersChartUrl,
             range: {
               from: this.getDateFrom(),
@@ -67,7 +69,6 @@ export default class Page {
             }
           }    
         );
-        this.customersChartElement = this.customersChart.element;
         
         this.bestseller = new SortableTable(
             header, 
@@ -75,14 +76,13 @@ export default class Page {
                 url: this.bestsellerUrl
             }
         );
-        this.bestseller.data = this.getTableData(this.bestsellerUrl);
-        // this.bestseller.render();
-        this.bestsellerElement = this.bestseller.element;
-
-        this.element = this.createElement(this.createTemplate());
-        this.createRangePickerElement();
-        this.createColumnChartElements();
-        this.createBestsellerElement();
+        this.bestseller.data = this.getTableData(this.getDateFrom().toISOString(), new Date().toISOString());
+        
+        this.subElements.rangePicker.append(this.rangePicker.element);
+        this.subElements.ordersChart.append(this.ordersChart.element);
+        this.subElements.salesChart.append(this.salesChart.element);
+        this.subElements.customersChart.append(this.customersChart.element);
+        this.subElements.sortableTable.append(this.bestseller.element); 
 
         this.createEventListeners();
     }
@@ -93,18 +93,10 @@ export default class Page {
         return dateFrom;
     }
 
-    async getChartData(chartUrl) {
-        const url = new URL(chartUrl, BACKEND_URL);
-        url.searchParams.set('from', this.getDateFrom().toISOString());
-        url.searchParams.set('to', new Date().toISOString());
-        
-        return await fetchJson(url);
-    }
-
-    async getTableData(tabletUrl) {
-        const url = new URL(tabletUrl, BACKEND_URL);
-        url.searchParams.set('from', this.getDateFrom().toISOString());
-        url.searchParams.set('to', new Date().toISOString());
+    async getTableData(from, to) {
+        const url = new URL(this.bestsellerUrl, BACKEND_URL);
+        url.searchParams.set('from', from);
+        url.searchParams.set('to', to);
         url.searchParams.set('_sort', header.find(item => item.sortable).id);
         url.searchParams.set('_order', 'asc');
         url.searchParams.set('_start', 1);
@@ -124,16 +116,14 @@ export default class Page {
                 <div class="dashboard">
                     <div class="content__top-panel">
                         <h2 class="page-title">Панель управления</h2>
-                        <!-- data-component="rangePicker"-->
+                        <div data-element="rangePicker"></div>
                     </div>
                     <div data-element="chartsRoot" class="dashboard__charts">
                         <div data-element="ordersChart" class="dashboard__chart_orders"></div>
                         <div data-element="salesChart" class="dashboard__chart_sales"></div>
                         <div data-element="customersChart" class="dashboard__chart_customers"></div>
-                    </div>
-                
-                    <h3 class="block-title">Лидеры продаж</h3>
-            
+                    </div>                
+                    <h3 class="block-title">Лидеры продаж</h3>            
                     <div data-element="sortableTable">
                     </div>
                 </div>
@@ -145,48 +135,6 @@ export default class Page {
         return this.element;
     }
 
-    createElement(template) {
-        const element = document.createElement("div");
-        element.innerHTML = template;
-        return element.firstElementChild;
-    }
-
-    createRangePickerElement() {
-        const parentElement = this.element.querySelector('[class="content__top-panel"]');
-        parentElement.append(this.rangePicker.element);
-    }
-
-    createColumnChartElements() {
-        this.createChartElement('orders', this.ordersChartElement);
-        this.createChartElement('sales', this.salesChartElement);
-        this.createChartElement('customers', this.customersChartElement);
-        
-        // const parentElement = this.element.querySelector('[data-element="ordersChart"]');
-        // if (parentElement) {
-        //     const columnChartElement = parentElement.querySelector('[class="column-chart"]');
-        //     if (columnChartElement) {
-        //         columnChartElement.remove();
-        //     }
-        // }
-        // parentElement.append(this.ordersChartElement);
-    }
-    
-    createChartElement(type, element) {
-        const parentElement = this.element.querySelector(`[data-element="${type}Chart"]`);
-        if (parentElement) {
-            const columnChartElement = parentElement.querySelector('[class="column-chart"]');
-            if (columnChartElement) {
-                columnChartElement.remove();
-            }
-        }
-        parentElement.append(element);
-    }
-
-    createBestsellerElement() {
-        const parentElement = this.element.querySelector('[data-element="sortableTable"]');
-        parentElement.append(this.bestseller.element);
-    }
-
     createEventListeners() {
         document.addEventListener('date-select', this.handleRangePickerDateSelect)
     }
@@ -196,18 +144,20 @@ export default class Page {
     }
 
     handleRangePickerDateSelect = (e) => {
-        this.refreshColumnChart(this.ordersChart, e.detail, this.ordersChartUrl, this.ordersChartElement);
-        this.refreshColumnChart(this.salesChart, e.detail, this.salesChartUrl, this.salesChartElement);
-        this.refreshColumnChart(this.customersChart, e.detail, this.customersChartUrl, this.customersChartElement);
-        
-        this.createColumnChartElements();
+        this.refreshColumnChart(this.ordersChart, e.detail, this.ordersChartUrl);
+        this.refreshColumnChart(this.salesChart, e.detail, this.salesChartUrl);
+        this.refreshColumnChart(this.customersChart, e.detail, this.customersChartUrl);
+        this.refreshBestseller(e.detail);
     }
 
-    refreshColumnChart(coumnChart, range, url, element) {
+    refreshColumnChart(coumnChart, range, url) {
         coumnChart.range = range;
         coumnChart.url = new URL(url, BACKEND_URL);
         coumnChart.update(range.from, range.to);
-        element = coumnChart.element;
+    }
+
+    async refreshBestseller(range) {
+        this.bestseller.data = this.getTableData(range.from.toISOString(), range.to.toISOString());
     }
 
     remove() {
@@ -217,14 +167,6 @@ export default class Page {
     destroy() {
         this.element.remove();
         this.destroyEventListeners();
+        this.subElements = {};
     }
-
-    // Dashboard Закзы: https://course-js.javascript.ru/api/dashboard/orders?from=2024-09-10T12%3A53%3A30.819Z&to=2024-10-10T12%3A53%3A30.819Z
-    // Dashboard Продажи:  https://course-js.javascript.ru/api/dashboard/sales?from=2024-09-10T12%3A53%3A30.819Z&to=2024-10-10T12%3A53%3A30.819Z
-    // Dashboard Клиенты: https://course-js.javascript.ru/api/dashboard/customers?from=2024-09-10T12%3A53%3A30.819Z&to=2024-10-10T12%3A53%3A30.819Z
-    // Dashboard Betseller: https://course-js.javascript.ru/api/dashboard/bestsellers?from=2024-09-10T12%3A53%3A30.819Z&to=2024-10-10T12%3A53%3A30.819Z&_sort=title&_order=asc&_start=0&_end=30
-    // Товары: https://course-js.javascript.ru/api/rest/products?_embed=subcategory.category&_sort=title&_order=asc&_start=0&_end=30
-    // Категории: https://course-js.javascript.ru/api/rest/categories?_sort=weight&_refs=subcategory
-    // Продажи: https://course-js.javascript.ru/api/rest/orders?createdAt_gte=2024-09-10T12%3A52%3A59.468Z&createdAt_lte=2024-10-10T12%3A52%3A59.468Z&_sort=createdAt&_order=desc&_start=0&_end=30
-
 }
